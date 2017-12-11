@@ -10,7 +10,7 @@ import mialab.evaluation.metric as mtrc
 
 import mialab.utilities.pipeline_utilities as putil
 
-import numpy as np
+#import numpy as np
 from tensorflow.python.platform import app
 
 """
@@ -72,7 +72,7 @@ overlay_img = sitk.LabelMapContourOverlay(sitk.Cast(msk, sitk.sitkLabelUInt8), s
     #We assume the original slice is isotropic, otherwise the display would be distorted
 plt.imshow(sitk.GetArrayViewFromImage(overlay_img))
 plt.axis('off')
-plt.show()
+#############plt.show()
 
 im1 = np.asarray(image1).astype(np.bool)
 im2 = np.asarray(image2).astype(np.bool)
@@ -85,11 +85,47 @@ evaluator = putil.init_evaluator(result_dir)
 
 evaluator.add_label(0, 'Background')
 evaluator.add_label(1, 'Structure')
-#evaluator.add_metric(mtrc.get_all_metrics())
-evaluator.add_metric(mtrc.VolumeSimilarity())
+
+#overlap
+'''evaluator.add_metric(mtrc.JaccardCoefficient())
 evaluator.add_metric(mtrc.AreaUnderCurve())
-evaluator.add_metric(mtrc.JaccardCoefficient())
+evaluator.add_metric(mtrc.CohenKappaMetric())
+evaluator.add_metric(mtrc.RandIndex())
+evaluator.add_metric(mtrc.AdjustedRandIndex())
+evaluator.add_metric(mtrc.InterclassCorrelation())
+evaluator.add_metric(mtrc.VolumeSimilarity())
+#evaluator.add_metric(mtrc.MutualInformation()) #geht niiicht
+'''
+
+
+#distance
+#evaluator.add_metric(mtrc.HausdorffDistance())
+#evaluator.add_metric(mtrc.AverageDistance())
+#evaluator.add_metric(mtrc.MahalanobisDistance())
+#evaluator.add_metric(mtrc.VariationOfInformation())
+'''
+evaluator.add_metric(mtrc.GlobalConsistencyError())
+evaluator.add_metric(mtrc.ProbabilisticDistance())
+'''
+
+
+#classical
+'''
 evaluator.add_metric(mtrc.Sensitivity())
+evaluator.add_metric(mtrc.Specificity())
+evaluator.add_metric(mtrc.Precision())
+evaluator.add_metric(mtrc.FMeasure())
+evaluator.add_metric(mtrc.Accuracy())
+evaluator.add_metric(mtrc.Fallout())
+evaluator.add_metric(mtrc.TruePositive())
+evaluator.add_metric(mtrc.FalsePositive())
+evaluator.add_metric(mtrc.TrueNegative())
+evaluator.add_metric(mtrc.FalseNegative())     
+'''
+#evaluator.add_metric(mtrc.LabelVolume())
+#evaluator.add_metric(mtrc.PredictionVolume())
+
+
 evaluator.evaluate(im1, im2, 'Patient1')
 
 #dice(image1, image2)
