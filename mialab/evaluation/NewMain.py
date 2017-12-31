@@ -7,7 +7,7 @@ from scipy.spatial.distance import directed_hausdorff
 import SimpleITK as sitk
 import matplotlib.pyplot as plt
 import mialab.evaluation.metric as mtrc
-
+import mialab.evaluation.evaluator as eval
 import mialab.utilities.pipeline_utilities as putil
 
 #import numpy as np
@@ -59,8 +59,8 @@ window_min = 500
 window_max = 500
 
 ##Load some images to compare the different similarity measures#########################################################
-image1 = sitk.ReadImage('Cyrcle1.png', 1)
-image2 = sitk.ReadImage('Cyrcle2.png', 1)
+image1 = sitk.ReadImage('checker_fine_large.png', 1)
+image2 = sitk.ReadImage('checker_fine_large_Noise100.png', 1)
 image1 = sitk.BinaryThreshold(image1, 1)
 image2 = sitk.BinaryThreshold(image2, 1)
 
@@ -73,9 +73,10 @@ msk = image2
 overlay_img = sitk.LabelMapContourOverlay(sitk.Cast(msk, sitk.sitkLabelUInt8), sitk.Cast(sitk.IntensityWindowing(
     img, windowMinimum=window_min, windowMaximum=window_max), sitk.sitkUInt8), opacity=2, contourThickness=[2, 2])
     #We assume the original slice is isotropic, otherwise the display would be distorted
-plt.imshow(sitk.GetArrayViewFromImage(overlay_img))
-plt.axis('off')
-#############plt.show()
+#plt.imshow(sitk.GetArrayViewFromImage(msk))
+
+#plt.axis('off')
+##plt.show()
 
 #im1 = np.asarray(image1).astype(np.bool)
 #im2 = np.asarray(image2).astype(np.bool)
@@ -84,13 +85,15 @@ script_dir = os.path.dirname(sys.argv[0])
 result_dir = os.path.normpath(os.path.join(script_dir, './mia-result'))
 #os.makedirs(result_dir, exist_ok=True)
 # initialize evaluator
-evaluator = putil.init_evaluator(result_dir)
+evaluator = eval.Evaluator(eval.ConsoleEvaluatorWriter(5))
+evaluator.add_writer(eval.CSVEvaluatorWriter(os.path.join( 'results.csv')))
 
 evaluator.add_label(0, 'Background')
 evaluator.add_label(1, 'Structure')
 
 #overlap
 
+evaluator.add_metric(mtrc.DiceCoefficient())
 evaluator.add_metric(mtrc.JaccardCoefficient())
 evaluator.add_metric(mtrc.AreaUnderCurve())
 evaluator.add_metric(mtrc.CohenKappaMetric())
@@ -98,23 +101,23 @@ evaluator.add_metric(mtrc.RandIndex())
 evaluator.add_metric(mtrc.AdjustedRandIndex())
 evaluator.add_metric(mtrc.InterclassCorrelation())
 evaluator.add_metric(mtrc.VolumeSimilarity())
-#evaluator.add_metric(mtrc.MutualInformation())                 #geht niiicht ValueError: math domain error
+evaluator.add_metric(mtrc.MutualInformation())                 #ValueError: math domain error
 
 
 
 #distance
-#evaluator.add_metric(mtrc.HausdorffDistance())                 #itk::ERROR: pixelcount is equal to 0
-#evaluator.add_metric(mtrc.AverageDistance())                   #itk::ERROR: pixelcount is equal to 0
-#evaluator.add_metric(mtrc.VariationOfInformation())            #ValueError: math domain error
-'''
+evaluator.add_metric(mtrc.HausdorffDistance())                 #itk::ERROR: pixelcount is equal to 0
+evaluator.add_metric(mtrc.AverageDistance())                   #itk::ERROR: pixelcount is equal to 0
+evaluator.add_metric(mtrc.VariationOfInformation())            #ValueError: math domain error
+
 evaluator.add_metric(mtrc.MahalanobisDistance())
 evaluator.add_metric(mtrc.GlobalConsistencyError())
 evaluator.add_metric(mtrc.ProbabilisticDistance())
-'''
+
 
 
 #classical
-'''
+
 evaluator.add_metric(mtrc.Sensitivity())
 evaluator.add_metric(mtrc.Specificity())
 evaluator.add_metric(mtrc.Precision())
@@ -127,11 +130,11 @@ evaluator.add_metric(mtrc.TrueNegative())
 evaluator.add_metric(mtrc.FalseNegative()) 
 evaluator.add_metric(mtrc.LabelVolume())
 evaluator.add_metric(mtrc.PredictionVolume())   
-'''
 
 
 
-evaluator.evaluate(image1, image2, 'Patient1')
+
+evaluator.evaluate(image1, image2, 'blubb')
 
 #dice(image1, image2)
 #d_hausd = directed_hausdorff(np.array(image1), np.array(image2))
