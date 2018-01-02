@@ -1,0 +1,23 @@
+import os
+
+import SimpleITK as sitk
+
+import mialab.evaluation.metric as mtrc
+import mialab.evaluation.evaluator as eval
+
+#path = '/home/evaluation/'
+
+
+image1 = sitk.ReadImage('Cyrcle1.png', 1)
+image2 = sitk.ReadImage('Cyrcle2.png', 1)
+image1 = sitk.BinaryThreshold(image1, 1)
+image2 = sitk.BinaryThreshold(image2, 1)
+
+
+evaluator = eval.Evaluator(eval.ConsoleEvaluatorWriter(5))
+evaluator.add_writer(eval.CSVEvaluatorWriter(os.path.join( 'results.csv')))
+evaluator.metrics = mtrc.get_all_metrics()
+evaluator.add_label(0, 'Background')
+evaluator.add_label(1, 'Structure')
+
+evaluator.evaluate(image1, image2, 'Test')
