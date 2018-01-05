@@ -1,0 +1,2 @@
+MiKTeX installed
+used with TeXStudio
